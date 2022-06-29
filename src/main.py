@@ -165,24 +165,28 @@ def pep(session):
             status_personal_page = dd_tag.string
             status_pep_general_table = find_tag(
                 tr_tag, 'td').string[1:]
+            try:
+                if status_personal_page not in (
+                        EXPECTED_STATUS[status_pep_general_table]):
+                    if len(status_pep_general_table) > 2 or (
+                            EXPECTED_STATUS[status_pep_general_table] is None):
+                        raise KeyError('Получен неожиданный статус')
+                    logging.info(
+                        f'Несовпадающие статусы:\n {pep_url}\n'
+                        f'Cтатус на персональной странице: '
+                        f'{status_personal_page}\n'
+                        f'Ожидаемые статусы: '
+                        f'{EXPECTED_STATUS[status_pep_general_table]}'
+                    )
 
-            if status_personal_page not in (
-                    EXPECTED_STATUS[status_pep_general_table]):
-                if len(status_pep_general_table) > 2 or (
-                        EXPECTED_STATUS[status_pep_general_table] is None):
-                    raise KeyError('Получен неожиданный статус')
-                logging.info(
-                    f'Несовпадающие статусы:\n {pep_url}\n'
-                    f'Cтатус на персональной странице: '
-                    f'{status_personal_page}\n'
-                    f'Ожидаемые статусы: '
-                    f'{EXPECTED_STATUS[status_pep_general_table]}'
-                )
+            except KeyError:
+                logging.warning('Получен некорректный статус')
 
             else:
                 pep_status_count[
                     status_personal_page] = pep_status_count.get(
                     status_personal_page, 0) + 1
+
     results.extend(pep_status_count.items())
     results.append(('Total: ', total_pep_count))
     return results
